@@ -61,7 +61,10 @@ public class ShopController {
     private final FindItemsByUserOperation findItemsByUserOperation;
 
     @PostMapping("/items")
-    @Operation(summary = "Find all shop items that satisfy the conditions.")
+    @Operation(
+        description = "Find all shop items that satisfy the conditions.",
+        summary = "Find items by filters"
+    )
     public List<Item> findItems(
         @Parameter(description = "'searchString' allows fulltext search in title field.")
         @Valid @RequestBody FindItemsRequest request,
@@ -74,7 +77,9 @@ public class ShopController {
     }
 
     @GetMapping("/item/{id}")
-    @Operation(summary = "Get shop item by it's id.")
+    @Operation(
+        summary = "Get item by id"
+    )
     public Item getItemById(@PathVariable(value = "id") Long id,
                             @RequestHeader("Authorization") String token) {
         log.info("ShopController.getItemById.in id = {}", id);
@@ -88,7 +93,10 @@ public class ShopController {
         consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE
         })
-    @Operation(summary = "Create new shop item with attachments. Allowed only for admin user.")
+    @Operation(
+        description = "Create new shop item with attachments. Allowed only for admin user.",
+        summary = "Create item"
+    )
     public Long createItem(@RequestPart("item") Item Item,
                            @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                            @RequestHeader("Authorization") String token) {
@@ -109,7 +117,10 @@ public class ShopController {
     }
 
     @PutMapping(value = "/item", params = "detach")
-    @Operation(summary = "Edit existed shop item. Allowed only for admin user.")
+    @Operation(
+        description = "Edit existed shop item. Allowed only for admin user.",
+        summary = "Edit item"
+    )
     public void editItem(@RequestPart("ttem") Item item,
                          @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                          @Parameter(description = "Whether delete or not delete attached photos.")
@@ -134,7 +145,10 @@ public class ShopController {
         MediaType.MULTIPART_FORM_DATA_VALUE
     })
     @ResponseBody
-    @Operation(summary = "Get shop item's attachments by item's id.")
+    @Operation(
+        description = "Get shop item's attachments by item's id.",
+        summary = "Get attachments by item id"
+    )
     public MultiValueMap<String, HttpEntity<?>> findAttachmentsByItemId(
         @Parameter(description = "Shop item's id.")
         @PathVariable(value = "id") Long itemId,
@@ -154,7 +168,10 @@ public class ShopController {
     }
 
     @GetMapping(value = "/item/{id}/purchase")
-    @Operation(summary = "Purchase item with certain id. User obtained from token.")
+    @Operation(
+        description = "Purchase item with certain id. User obtained from token.",
+        summary = "Purchase item"
+    )
     public void purchaseItem(
         @Parameter(description = "Shop item's id")
         @PathVariable(value = "id") Long itemId,
@@ -167,7 +184,10 @@ public class ShopController {
 
     @GetMapping(value = "/items")
     @ResponseBody
-    @Operation(summary = "Find shop items that have been purchased by user. User obtained from token.")
+    @Operation(
+        description = "Get shop items that have been purchased by user. User obtained from token.",
+        summary = "Get user's items"
+    )
     public List<Item> findItemsByUser(@RequestHeader("Authorization") String token) {
         log.info("ShopController.findItemsByUser.in");
         helper.obtainToken(token);
@@ -179,7 +199,10 @@ public class ShopController {
     @GetMapping(value = "/item/attachment/{id}",
         produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     @ResponseBody
-    @Operation(summary = "Get certain shop item's attachment by it's id.")
+    @Operation(
+        description = "Get certain shop item's attachment by it's id.",
+        summary = "Get attachment by id"
+    )
     public byte[] findAttachmentsById(
         @Parameter(description = "Attachment's id.")
         @PathVariable(value = "id") Long id,

@@ -1,7 +1,6 @@
 package org.alter.eco.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.enums.VoteType;
 import org.alter.eco.api.logic.approval.VoteForTaskOperation;
@@ -29,12 +28,13 @@ public class ApprovalController {
     private final VoteForTaskOperation voteForTaskOperation;
 
     @PostMapping("/vote")
-    @Operation(summary = "Vote for 'taskId'. Client obtained from token.")
-    public void voteForTask(
-        @RequestParam(value = "taskId") Long taskId,
-        @Parameter(description = "voteType is either APPROVE or REJECT")
-        @RequestParam(value = "type") VoteType voteType,
-        @RequestHeader("Authorization") String token) {
+    @Operation(
+        description = "Vote for task. Client obtained from token.",
+        summary = "Vote for task"
+    )
+    public void voteForTask(@RequestParam(value = "taskId") Long taskId,
+                            @RequestParam(value = "type") VoteType voteType,
+                            @RequestHeader("Authorization") String token) {
         log.info("ApprovalController.voteForTask.in taskId = {}, voteType = {}", taskId, voteType);
         helper.obtainToken(token);
         var request = new VoteForTaskRequest(

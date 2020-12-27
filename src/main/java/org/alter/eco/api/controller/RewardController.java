@@ -23,7 +23,10 @@ public class RewardController {
     private final GetAccountByIdOperation getAccountByIdOperation;
 
     @GetMapping(value = "/account")
-    @Operation(summary = "Get account that attached to user. If account doesnt exist this operation creates new empty account and return it.")
+    @Operation(
+        description = "Get account that attached to user. If account doesnt exist this operation creates new empty account and return it.",
+        summary = "Get user account"
+    )
     public Account getAccountByUser(@RequestHeader("Authorization") String token) {
         log.info("RewardController.getAccountById.in");
         helper.obtainToken(token);

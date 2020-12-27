@@ -1,5 +1,7 @@
 package org.alter.eco.api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.enums.TaskStatus;
 import org.alter.eco.api.logic.task.CreateTaskOperation;
@@ -60,8 +62,14 @@ public class TaskController {
     private final UpdateTaskStatusOperation updateTaskStatusOperation;
 
     @PostMapping("/tasks")
-    public List<Task> findTasks(@Valid @RequestBody FindTasksRequest request,
-                                @RequestHeader("Authorization") String token) {
+    @Operation(
+        description = "Find all tasks that satisfy the conditions.",
+        summary = "Find tasks by filters"
+    )
+    public List<Task> findTasks(
+        @Parameter(description = "'searchString' allows fulltext search in title field.")
+        @Valid @RequestBody FindTasksRequest request,
+        @RequestHeader("Authorization") String token) {
         log.info("TaskController.findTasks.in request = {}", request);
         helper.obtainToken(token);
         var result = findTasksOperation.process(request);
@@ -70,6 +78,9 @@ public class TaskController {
     }
 
     @GetMapping("/task/{id}")
+    @Operation(
+        summary = "Get task by id"
+    )
     public Task getTaskById(@PathVariable(value = "id") Long id,
                             @RequestHeader("Authorization") String token) {
         log.info("TaskController.getTaskById.in id = {}", id);
@@ -83,6 +94,10 @@ public class TaskController {
         consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE
         })
+    @Operation(
+        description = "Create task with attachments. If task has been created it doesn't mean that it will be approved.",
+        summary = "Create task"
+    )
     public Long createTask(@RequestPart("task") Task task,
                            @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                            @RequestHeader("Authorization") String token) {
@@ -103,8 +118,13 @@ public class TaskController {
     }
 
     @PutMapping(value = "/task", params = "detach")
+    @Operation(
+        description = "Edit existed task. Allowed only for user created this task.",
+        summary = "Edit task"
+    )
     public void editTask(@RequestPart("task") Task task,
                          @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
+                         @Parameter(description = "Whether delete or not delete attached photos.")
                          @RequestParam(value = "detach") boolean detach,
                          @RequestHeader("Authorization") String token) {
         log.info("TaskController.editTask.in task = {}", task);
@@ -123,6 +143,10 @@ public class TaskController {
     }
 
     @PatchMapping("/task/{id}")
+    @Operation(
+        description = "Update task status. It's useful only for turning task to RESOLVED stage. Another statuses are processed internally.",
+        summary = "Update task status"
+    )
     public void updateStatus(@PathVariable(value = "id") Long id,
                              @RequestParam("status") TaskStatus status,
                              @RequestHeader("Authorization") String token) {
@@ -137,8 +161,14 @@ public class TaskController {
         MediaType.MULTIPART_FORM_DATA_VALUE
     })
     @ResponseBody
-    public MultiValueMap<String, HttpEntity<?>> findAttachmentsByTaskId(@PathVariable(value = "id") Long taskId,
-                                                                        @RequestHeader("Authorization") String token) {
+    @Operation(
+        description = "Get all task's attachments by task's id.",
+        summary = "Get attachments by task id"
+    )
+    public MultiValueMap<String, HttpEntity<?>> findAttachmentsByTaskId(
+        @Parameter(description = "Task's id.")
+        @PathVariable(value = "id") Long taskId,
+        @RequestHeader("Authorization") String token) {
         log.info("TaskController.findAttachments.in id = {}", taskId);
         helper.obtainToken(token);
         var result = findAttachmentsByTaskIdOperation.process(taskId);
@@ -156,8 +186,14 @@ public class TaskController {
     @GetMapping(value = "/attachment/{id}",
         produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     @ResponseBody
-    public byte[] findAttachmentsById(@PathVariable(value = "id") Long id,
-                                      @RequestHeader("Authorization") String token) {
+    @Operation(
+        description = "Get certain task's attachment by it's id.",
+        summary = "Get attachment by id"
+    )
+    public byte[] findAttachmentsById(
+        @Parameter(description = "Attachment's id.")
+        @PathVariable(value = "id") Long id,
+        @RequestHeader("Authorization") String token) {
         log.info("TaskController.findAttachments.in id = {}", id);
         helper.obtainToken(token);
         var result = findAttachmentByIdOperation.process(id).getContent();
