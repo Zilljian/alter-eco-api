@@ -45,13 +45,13 @@ public class WriteoffByUserIdOperation {
             }
             var updatedAccount = rewardService.writeoffAccount(request);
 
-            sendEvent(updatedAccount.getId(), request.amount(), request.initiator());
+            sendEvent(updatedAccount.getUserId(), request.amount(), request.initiator());
         });
     }
 
-    private void sendEvent(Long accountId, Long value, String initiator) {
+    private void sendEvent(String userId, Long value, String initiator) {
         var event = new EventRecord();
-        event.setAccountId(accountId);
+        event.setUserId(userId);
         event.setValue(value);
         event.setName("WriteoffAccount");
         event.setInitiator(initiator);
