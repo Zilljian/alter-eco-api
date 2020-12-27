@@ -1,5 +1,6 @@
 package org.alter.eco.api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.logic.reward.GetAccountByIdOperation;
 import org.alter.eco.api.model.Account;
@@ -22,6 +23,7 @@ public class RewardController {
     private final GetAccountByIdOperation getAccountByIdOperation;
 
     @GetMapping(value = "/account")
+    @Operation(summary = "Get account that attached to user. If account doesnt exist this operation creates new empty account and return it.")
     public Account getAccountByUser(@RequestHeader("Authorization") String token) {
         log.info("RewardController.getAccountById.in");
         helper.obtainToken(token);

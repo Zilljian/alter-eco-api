@@ -1,5 +1,7 @@
 package org.alter.eco.api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.logic.shop.CreateItemOperation;
 import org.alter.eco.api.logic.shop.CreateItemOperation.CreateItemRequest;
@@ -59,8 +61,11 @@ public class ShopController {
     private final FindItemsByUserOperation findItemsByUserOperation;
 
     @PostMapping("/items")
-    public List<Item> findItems(@Valid @RequestBody FindItemsRequest request,
-                                @RequestHeader("Authorization") String token) {
+    @Operation(summary = "Find all shop items that satisfy the conditions.")
+    public List<Item> findItems(
+        @Parameter(description = "'searchString' allows fulltext search in title field.")
+        @Valid @RequestBody FindItemsRequest request,
+        @RequestHeader("Authorization") String token) {
         log.info("ShopController.findItems.in request = {}", request);
         helper.obtainToken(token);
         var result = findItemsOperation.process(request);
@@ -69,6 +74,7 @@ public class ShopController {
     }
 
     @GetMapping("/item/{id}")
+    @Operation(summary = "Get shop item by it's id.")
     public Item getItemById(@PathVariable(value = "id") Long id,
                             @RequestHeader("Authorization") String token) {
         log.info("ShopController.getItemById.in id = {}", id);
@@ -82,7 +88,8 @@ public class ShopController {
         consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE
         })
-    public Long createItem(@RequestPart("Item") Item Item,
+    @Operation(summary = "Create new shop item with attachments. Allowed only for admin user.")
+    public Long createItem(@RequestPart("item") Item Item,
                            @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                            @RequestHeader("Authorization") String token) {
         log.info("ShopController.createItem.in Item = {}", Item);
@@ -102,8 +109,10 @@ public class ShopController {
     }
 
     @PutMapping(value = "/item", params = "detach")
-    public void editItem(@RequestPart("Item") Item item,
+    @Operation(summary = "Edit existed shop item. Allowed only for admin user.")
+    public void editItem(@RequestPart("ttem") Item item,
                          @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
+                         @Parameter(description = "Whether delete or not delete attached photos.")
                          @RequestParam(value = "detach") boolean detach,
                          @RequestHeader("Authorization") String token) {
         log.info("ShopController.editItem.in Item = {}", item);
@@ -125,8 +134,11 @@ public class ShopController {
         MediaType.MULTIPART_FORM_DATA_VALUE
     })
     @ResponseBody
-    public MultiValueMap<String, HttpEntity<?>> findAttachmentsByItemId(@PathVariable(value = "id") Long itemId,
-                                                                        @RequestHeader("Authorization") String token) {
+    @Operation(summary = "Get shop item's attachments by item's id.")
+    public MultiValueMap<String, HttpEntity<?>> findAttachmentsByItemId(
+        @Parameter(description = "Shop item's id.")
+        @PathVariable(value = "id") Long itemId,
+        @RequestHeader("Authorization") String token) {
         log.info("ShopController.findAttachments.in id = {}", itemId);
         helper.obtainToken(token);
         var result = findAttachmentsByItemIdOperation.process(itemId);
@@ -142,8 +154,11 @@ public class ShopController {
     }
 
     @GetMapping(value = "/item/{id}/purchase")
-    public void purchaseItem(@PathVariable(value = "id") Long itemId,
-                             @RequestHeader("Authorization") String token) {
+    @Operation(summary = "Purchase item with certain id. User obtained from token.")
+    public void purchaseItem(
+        @Parameter(description = "Shop item's id")
+        @PathVariable(value = "id") Long itemId,
+        @RequestHeader("Authorization") String token) {
         log.info("ShopController.purchaseItem.in itemId = {}", itemId);
         helper.obtainToken(token);
         purchaseItemOperation.process(itemId);
@@ -152,6 +167,7 @@ public class ShopController {
 
     @GetMapping(value = "/items")
     @ResponseBody
+    @Operation(summary = "Find shop items that have been purchased by user. User obtained from token.")
     public List<Item> findItemsByUser(@RequestHeader("Authorization") String token) {
         log.info("ShopController.findItemsByUser.in");
         helper.obtainToken(token);
@@ -163,8 +179,11 @@ public class ShopController {
     @GetMapping(value = "/item/attachment/{id}",
         produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
     @ResponseBody
-    public byte[] findAttachmentsById(@PathVariable(value = "id") Long id,
-                                      @RequestHeader("Authorization") String token) {
+    @Operation(summary = "Get certain shop item's attachment by it's id.")
+    public byte[] findAttachmentsById(
+        @Parameter(description = "Attachment's id.")
+        @PathVariable(value = "id") Long id,
+        @RequestHeader("Authorization") String token) {
         log.info("ShopController.findAttachmentsById.in id = {}", id);
         helper.obtainToken(token);
         var result = findItemAttachmentByIdOperation.process(id).getContent();
