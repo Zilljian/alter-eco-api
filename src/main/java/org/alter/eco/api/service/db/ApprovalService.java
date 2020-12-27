@@ -80,7 +80,7 @@ public class ApprovalService {
 
     public List<ApprovalRecord> findTasksForApproving(FindByTimeShiftAndCounterRequest request) {
         return db.deleteFrom(approvalTable)
-            .where(approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.shift()))).lessOrEqual(LocalDateTime.now()))
+            .where(approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.shift()))).greaterOrEqual(LocalDateTime.now()))
             .and(approvalTable.COUNTER.greaterOrEqual(request.counter()))
             .and(approvalTable.STATUS.equal(request.status()))
             .returning(approvalTable.TASK_ID, approvalTable.STATUS)
