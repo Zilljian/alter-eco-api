@@ -2,23 +2,21 @@ package org.alter.eco.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.enums.TaskStatus;
-import org.alter.eco.api.logic.CreateTaskOperation;
-import org.alter.eco.api.logic.CreateTaskOperation.AttachPhotosRequest;
-import org.alter.eco.api.logic.CreateTaskOperation.CreateTaskRequest;
-import org.alter.eco.api.logic.EditTaskOperation;
-import org.alter.eco.api.logic.EditTaskOperation.EditTaskRequest;
-import org.alter.eco.api.logic.FindAttachmentByIdOperation;
-import org.alter.eco.api.logic.FindAttachmentsByTaskIdOperation;
-import org.alter.eco.api.logic.FindTaskByIdOperation;
-import org.alter.eco.api.logic.FindTasksOperation;
-import org.alter.eco.api.logic.FindTasksOperation.FindTasksRequest;
-import org.alter.eco.api.logic.UpdateStatusOperation;
-import org.alter.eco.api.logic.UpdateStatusOperation.UpdateStatusRequest;
+import org.alter.eco.api.logic.task.CreateTaskOperation;
+import org.alter.eco.api.logic.task.CreateTaskOperation.AttachPhotosRequest;
+import org.alter.eco.api.logic.task.CreateTaskOperation.CreateTaskRequest;
+import org.alter.eco.api.logic.task.EditTaskOperation;
+import org.alter.eco.api.logic.task.EditTaskOperation.EditTaskRequest;
+import org.alter.eco.api.logic.task.FindAttachmentByIdOperation;
+import org.alter.eco.api.logic.task.FindAttachmentsByTaskIdOperation;
+import org.alter.eco.api.logic.task.FindTaskByIdOperation;
+import org.alter.eco.api.logic.task.FindTasksOperation;
+import org.alter.eco.api.logic.task.FindTasksOperation.FindTasksRequest;
+import org.alter.eco.api.logic.task.UpdateTaskStatusOperation;
+import org.alter.eco.api.logic.task.UpdateTaskStatusOperation.UpdateStatusRequest;
 import org.alter.eco.api.model.Task;
-import org.alter.eco.api.service.auth.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -51,7 +49,7 @@ public class TaskController {
 
     private final static Logger log = LoggerFactory.getLogger(TaskController.class);
 
-    private final AuthService authService;
+    private final ControllerHelper helper;
 
     private final CreateTaskOperation createTaskOperation;
     private final FindTasksOperation findTasksOperation;
@@ -59,13 +57,13 @@ public class TaskController {
     private final FindAttachmentByIdOperation findAttachmentByIdOperation;
     private final FindAttachmentsByTaskIdOperation findAttachmentsByTaskIdOperation;
     private final EditTaskOperation editTaskOperation;
-    private final UpdateStatusOperation updateStatusOperation;
+    private final UpdateTaskStatusOperation updateTaskStatusOperation;
 
     @PostMapping("/tasks")
     public List<Task> findTasks(@Valid @RequestBody FindTasksRequest request,
                                 @RequestHeader("Authorization") String token) {
         log.info("RestController.findTasks.in request = {}", request);
-        obtainToken(token);
+        helper.obtainToken(token);
         var result = findTasksOperation.process(request);
         log.info("RestController.findTasks.out");
         return result;
@@ -75,7 +73,7 @@ public class TaskController {
     public Task getTaskById(@PathVariable(value = "id") Long id,
                             @RequestHeader("Authorization") String token) {
         log.info("RestController.getTaskById.in id = {}", id);
-        obtainToken(token);
+        helper.obtainToken(token);
         var result = findTaskByIdOperation.process(id);
         log.info("RestController.getTaskById.out");
         return result;
@@ -89,7 +87,7 @@ public class TaskController {
                            @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                            @RequestHeader("Authorization") String token) {
         log.info("RestController.createTask.in task = {}", task);
-        obtainToken(token);
+        helper.obtainToken(token);
         var attachments = ofNullable(attachment).orElse(List.of()).stream()
             .map(a -> {
                 try {
@@ -110,7 +108,7 @@ public class TaskController {
                          @RequestParam(value = "detach") boolean detach,
                          @RequestHeader("Authorization") String token) {
         log.info("RestController.editTask.in task = {}", task);
-        obtainToken(token);
+        helper.obtainToken(token);
         var attachments = ofNullable(attachment).orElse(List.of()).stream()
             .map(a -> {
                 try {
@@ -129,9 +127,9 @@ public class TaskController {
                              @RequestParam("status") TaskStatus status,
                              @RequestHeader("Authorization") String token) {
         log.info("RestController.updateStatus.in id = {}, status = {}", id, status);
-        obtainToken(token);
+        helper.obtainToken(token);
         var request = new UpdateStatusRequest(id, status);
-        updateStatusOperation.process(request);
+        updateTaskStatusOperation.process(request);
         log.info("RestController.updateStatus.out");
     }
 
@@ -142,7 +140,7 @@ public class TaskController {
     public MultiValueMap<String, HttpEntity<?>> findAttachmentsByTaskId(@PathVariable(value = "id") Long taskId,
                                                                         @RequestHeader("Authorization") String token) {
         log.info("RestController.findAttachments.in id = {}", taskId);
-        obtainToken(token);
+        helper.obtainToken(token);
         var result = findAttachmentsByTaskIdOperation.process(taskId);
         var builder = new MultipartBodyBuilder();
         result.forEach(a -> builder.part(
@@ -161,20 +159,9 @@ public class TaskController {
     public byte[] findAttachmentsById(@PathVariable(value = "id") Long id,
                                       @RequestHeader("Authorization") String token) {
         log.info("RestController.findAttachments.in id = {}", id);
-        obtainToken(token);
+        helper.obtainToken(token);
         var result = findAttachmentByIdOperation.process(id).getContent();
         log.info("RestController.findAttachments.out");
         return result;
-    }
-
-    private void obtainToken(String header) {
-        var token = header.replace("Bearer ", "").trim();
-        try {
-            var uuid = authService.getUuidFromToken(token);
-            MDC.put("user", uuid);
-            log.info("Request by user with uuid = {}", uuid);
-        } catch (RuntimeException e) {
-            log.error("Error while obtaining token", e);
-        }
     }
 }

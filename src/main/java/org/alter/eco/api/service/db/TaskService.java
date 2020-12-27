@@ -3,7 +3,7 @@ package org.alter.eco.api.service.db;
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.tables.Task;
 import org.alter.eco.api.jooq.tables.records.TaskRecord;
-import org.alter.eco.api.logic.FindTasksOperation.FindTasksRequest;
+import org.alter.eco.api.logic.task.FindTasksOperation.FindTasksRequest;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 

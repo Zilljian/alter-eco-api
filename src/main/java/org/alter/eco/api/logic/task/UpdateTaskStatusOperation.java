@@ -1,4 +1,4 @@
-package org.alter.eco.api.logic;
+package org.alter.eco.api.logic.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -12,13 +12,19 @@ import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
-public class UpdateStatusOperation {
+public class UpdateTaskStatusOperation {
 
-    private final static Logger log = LoggerFactory.getLogger(UpdateStatusOperation.class);
+    private final static Logger log = LoggerFactory.getLogger(UpdateTaskStatusOperation.class);
 
     public final TaskService taskService;
 
     public void process(UpdateStatusRequest request) {
+        log.info("UpdateTaskStatusOperation.process.in request = {}", request);
+        internalProcess(request);
+        log.info("UpdateTaskStatusOperation.process.out");
+    }
+
+    private void internalProcess(UpdateStatusRequest request) {
         var task = taskService.findById(request.taskId)
             .orElseThrow(() -> new RuntimeException("No such task exist with id = " + request.taskId));
         var oldTaskStatus = task

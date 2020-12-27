@@ -1,7 +1,6 @@
 package org.alter.eco.api.service.auth;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,7 +11,7 @@ public class AuthService {
     public String getUuidFromToken(String token) {
         try {
             return firebaseAuth.verifyIdToken(token).getUid();
-        } catch (FirebaseAuthException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

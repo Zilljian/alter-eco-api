@@ -1,4 +1,4 @@
-package org.alter.eco.api.logic;
+package org.alter.eco.api.logic.task;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.toList;
 import static org.alter.eco.api.exception.ValidationError.INVALID_ATTACH_REQUEST;
@@ -32,6 +31,13 @@ public class CreateTaskOperation {
     private final AttachmentService attachmentService;
 
     public Long process(CreateTaskRequest request) {
+        log.info("CreateTaskOperation.process.in id = {}", request);
+        var result = internalProcess(request);
+        log.info("CreateTaskOperation.process.out");
+        return result;
+    }
+
+    private Long internalProcess(CreateTaskRequest request) {
         var newTask = request.newTask;
         newTask.setStatus(TaskStatus.CREATED);
         newTask.setCreatedBy(requireNonNullElse(MDC.get("user"), "default"));

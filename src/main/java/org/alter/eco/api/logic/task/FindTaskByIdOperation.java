@@ -1,4 +1,4 @@
-package org.alter.eco.api.logic;
+package org.alter.eco.api.logic.task;
 
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.tables.records.AttachmentRecord;
@@ -22,6 +22,13 @@ public class FindTaskByIdOperation {
     private final AttachmentService attachmentService;
 
     public Task process(Long id) {
+        log.info("FindTaskByIdOperation.process.in id = {}", id);
+        var result = internalProcess(id);
+        log.info("FindTaskByIdOperation.process.out");
+        return result;
+    }
+
+    private Task internalProcess(Long id) {
         var task = taskService.findById(id)
             .orElseThrow(() -> TASK_NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
         var attachments = attachmentService.findIdsByTaskId(task.getId()).stream()

@@ -16,7 +16,7 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import javax.sql.DataSource;
 
 @Configuration
-public class Jooq {
+public class JooqConfiguration {
 
     @Bean
     public DefaultDSLContext dsl(org.jooq.Configuration configuration) {

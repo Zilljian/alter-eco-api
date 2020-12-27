@@ -1,4 +1,4 @@
-package org.alter.eco.api.logic;
+package org.alter.eco.api.logic.task;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,6 +34,13 @@ public class FindTasksOperation {
     private final AttachmentService attachmentService;
 
     public List<org.alter.eco.api.model.Task> process(FindTasksRequest request) {
+        log.info("FindTasksOperation.process.in request = {}", request);
+        var result = internalProcess(request);
+        log.info("FindTasksOperation.process.out");
+        return result;
+    }
+
+    private List<org.alter.eco.api.model.Task> internalProcess(FindTasksRequest request) {
         var tasks = taskService.findByFilters(request);
         var taskIds = tasks.stream().map(TaskRecord::getId).collect(toList());
         var attachments = attachmentService.findIdsByTaskId(taskIds);

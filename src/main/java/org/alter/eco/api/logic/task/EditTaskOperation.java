@@ -1,12 +1,12 @@
-package org.alter.eco.api.logic;
+package org.alter.eco.api.logic.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.alter.eco.api.service.db.AttachmentService;
-import org.alter.eco.api.service.db.TaskService;
 import org.alter.eco.api.jooq.enums.TaskStatus;
 import org.alter.eco.api.jooq.tables.records.TaskRecord;
-import org.alter.eco.api.logic.CreateTaskOperation.AttachPhotosRequest;
+import org.alter.eco.api.logic.task.CreateTaskOperation.AttachPhotosRequest;
+import org.alter.eco.api.service.db.AttachmentService;
+import org.alter.eco.api.service.db.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,6 +28,12 @@ public class EditTaskOperation {
     private final AttachmentService attachmentService;
 
     public void process(EditTaskRequest request) {
+        log.info("EditTaskOperation.process.in request = {}", request);
+        internalProcess(request);
+        log.info("EditTaskOperation.process.out");
+    }
+
+    private void internalProcess(EditTaskRequest request) {
         var id = request.newTask.getId();
         var oldTask = taskService.findById(id)
             .orElseThrow(() -> TASK_NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
@@ -43,7 +49,7 @@ public class EditTaskOperation {
         attachmentService.attach(attachmentRecords);
     }
 
-    public TaskRecord updateRequest(TaskRecord newTask, TaskRecord oldTask) {
+    private TaskRecord updateRequest(TaskRecord newTask, TaskRecord oldTask) {
         if (isNull(oldTask.getAssignee()) && nonNull(newTask.getAssignee())) {
             newTask.setStatus(TaskStatus.IN_PROGRESS);
             return newTask;
