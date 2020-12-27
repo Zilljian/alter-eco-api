@@ -8,7 +8,7 @@ import org.alter.eco.api.jooq.tables.records.AccountRecord;
 import org.alter.eco.api.jooq.tables.records.EventRecord;
 import org.alter.eco.api.logic.reward.AccrualByClientIdOperation.AccrualRequest;
 import org.alter.eco.api.logic.reward.UpdateAccountStatusOperation.UpdateStatusRequest;
-import org.alter.eco.api.logic.reward.WriteoffByClientIdOperation.WriteoffRequest;
+import org.alter.eco.api.logic.reward.WriteoffByUserIdOperation.WriteoffRequest;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +25,12 @@ public class RewardService {
     private final Event eventTable = Event.EVENT;
 
     public Optional<AccountRecord> findByUser(String userUuid) {
-        return db.selectFrom(accountTable)
-            .where(accountTable.USER_ID.equal(userUuid))
+        return db.insertInto(accountTable)
+            .set(accountTable.USER_ID, userUuid)
+            .set(accountTable.AMOUNT, 0L)
+            .onConflictOnConstraint(accountTable.getPrimaryKey())
+            .doNothing()
+            .returning()
             .fetchOptional();
     }
 

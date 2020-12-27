@@ -8,22 +8,31 @@ import org.alter.eco.api.service.db.RewardService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import static java.lang.String.format;
+import static org.alter.eco.api.exception.ApplicationError.INTERNAL_ERROR;
 import static org.alter.eco.api.exception.ApplicationError.NOT_ENOUGH_MONEY;
 import static org.alter.eco.api.exception.ApplicationError.WRONG_STATUS;
 
 @Component
 @RequiredArgsConstructor
-public class WriteoffByClientIdOperation {
+@Transactional(propagation = Propagation.REQUIRED)
+public class WriteoffByUserIdOperation {
 
-    private final static Logger log = LoggerFactory.getLogger(WriteoffByClientIdOperation.class);
+    private final static Logger log = LoggerFactory.getLogger(WriteoffByUserIdOperation.class);
 
     private final RewardService rewardService;
 
     public void process(WriteoffRequest request) {
         log.info("WriteoffByClientIdOperation.process.in id = {}", request);
-        internalProcess(request);
+        try {
+            internalProcess(request);
+        } catch (Exception e) {
+            log.warn("WriteoffByClientIdOperation.process.thrown", e);
+            throw INTERNAL_ERROR.exception(e);
+        }
         log.info("WriteoffByClientIdOperation.process.out");
     }
 
@@ -50,5 +59,10 @@ public class WriteoffByClientIdOperation {
     }
 
     @ToString(exclude = "amount")
-    public static record WriteoffRequest(String userUuid, Long amount, String initiator) {}
+    public static record WriteoffRequest(String userUuid, Long amount, String initiator) {
+
+        public static WriteoffRequest system(String userUuid, Long amount) {
+            return new WriteoffRequest(userUuid, amount, "system");
+        }
+    }
 }

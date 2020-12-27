@@ -16,11 +16,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.alter.eco.api.exception.ApplicationError.TASK_NOT_FOUND_BY_ID;
+import static org.alter.eco.api.exception.ApplicationError.NOT_FOUND_BY_ID;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(propagation = Propagation.REQUIRED)
 public class ApproveScheduledOperation extends Thread {
 
     private static final Logger log = LoggerFactory.getLogger(ApproveScheduledOperation.class);
@@ -63,7 +66,16 @@ public class ApproveScheduledOperation extends Thread {
     @SneakyThrows
     public void run() {
         log.info("ApproveScheduledOperation.run.in");
+        try {
+            internalRun();
+            log.info("ApproveScheduledOperation.run.out");
+        } catch (Exception e) {
+            log.error("ApproveScheduledOperation.run.thrown Pause executor for 30 seconds", e);
+            Thread.sleep(30 * 1000);
+        }
+    }
 
+    public void internalRun() {
         approvalService.findTasksForApproving(completingRequest).forEach(
             a -> {
                 approvalService.findClientIdsForAccrual(request(a.getTaskId(), VoteType.APPROVE))
@@ -71,7 +83,7 @@ public class ApproveScheduledOperation extends Thread {
                 updateTaskStatusOperation.process(new UpdateStatusRequest(a.getTaskId(), TaskStatus.COMPLETED));
                 approvalService.deleteClients(a.getTaskId());
                 var task = taskService.findById(a.getTaskId())
-                    .orElseThrow(() -> TASK_NOT_FOUND_BY_ID.exception("No such task exist with id = " + a.getTaskId()));
+                    .orElseThrow(() -> NOT_FOUND_BY_ID.exception("No such task exist with id = " + a.getTaskId()));
                 accrualByClientIdOperation.process(AccrualRequest.system(task.getAssignee(), task.getReward()));
                 accrualByClientIdOperation.process(AccrualRequest.system(task.getCreatedBy(), CREATOR_REWARD));
             }
@@ -94,8 +106,6 @@ public class ApproveScheduledOperation extends Thread {
                 approvalService.deleteClients(a.getTaskId());
             }
         );
-
-        log.info("ApproveScheduledOperation.run.out");
     }
 
     private FindClientIdsForAccrualRequest request(Long taskId, VoteType voteType) {

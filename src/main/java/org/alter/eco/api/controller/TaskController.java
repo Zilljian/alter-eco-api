@@ -62,20 +62,20 @@ public class TaskController {
     @PostMapping("/tasks")
     public List<Task> findTasks(@Valid @RequestBody FindTasksRequest request,
                                 @RequestHeader("Authorization") String token) {
-        log.info("RestController.findTasks.in request = {}", request);
+        log.info("TaskController.findTasks.in request = {}", request);
         helper.obtainToken(token);
         var result = findTasksOperation.process(request);
-        log.info("RestController.findTasks.out");
+        log.info("TaskController.findTasks.out");
         return result;
     }
 
     @GetMapping("/task/{id}")
     public Task getTaskById(@PathVariable(value = "id") Long id,
                             @RequestHeader("Authorization") String token) {
-        log.info("RestController.getTaskById.in id = {}", id);
+        log.info("TaskController.getTaskById.in id = {}", id);
         helper.obtainToken(token);
         var result = findTaskByIdOperation.process(id);
-        log.info("RestController.getTaskById.out");
+        log.info("TaskController.getTaskById.out");
         return result;
     }
 
@@ -86,7 +86,7 @@ public class TaskController {
     public Long createTask(@RequestPart("task") Task task,
                            @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                            @RequestHeader("Authorization") String token) {
-        log.info("RestController.createTask.in task = {}", task);
+        log.info("TaskController.createTask.in task = {}", task);
         helper.obtainToken(token);
         var attachments = ofNullable(attachment).orElse(List.of()).stream()
             .map(a -> {
@@ -98,7 +98,7 @@ public class TaskController {
             }).collect(toList());
         var request = new CreateTaskRequest(task.toRecord(), attachments);
         var result = createTaskOperation.process(request);
-        log.info("RestController.createTask.out");
+        log.info("TaskController.createTask.out");
         return result;
     }
 
@@ -107,7 +107,7 @@ public class TaskController {
                          @RequestPart(value = "attachment", required = false) List<MultipartFile> attachment,
                          @RequestParam(value = "detach") boolean detach,
                          @RequestHeader("Authorization") String token) {
-        log.info("RestController.editTask.in task = {}", task);
+        log.info("TaskController.editTask.in task = {}", task);
         helper.obtainToken(token);
         var attachments = ofNullable(attachment).orElse(List.of()).stream()
             .map(a -> {
@@ -119,18 +119,18 @@ public class TaskController {
             }).collect(toList());
         var request = new EditTaskRequest(task.toRecord(), attachments, detach);
         editTaskOperation.process(request);
-        log.info("RestController.editTask.out");
+        log.info("TaskController.editTask.out");
     }
 
     @PatchMapping("/task/{id}")
     public void updateStatus(@PathVariable(value = "id") Long id,
                              @RequestParam("status") TaskStatus status,
                              @RequestHeader("Authorization") String token) {
-        log.info("RestController.updateStatus.in id = {}, status = {}", id, status);
+        log.info("TaskController.updateStatus.in id = {}, status = {}", id, status);
         helper.obtainToken(token);
         var request = new UpdateStatusRequest(id, status);
         updateTaskStatusOperation.process(request);
-        log.info("RestController.updateStatus.out");
+        log.info("TaskController.updateStatus.out");
     }
 
     @GetMapping(value = "/task/{id}/attachment", produces = {
@@ -139,7 +139,7 @@ public class TaskController {
     @ResponseBody
     public MultiValueMap<String, HttpEntity<?>> findAttachmentsByTaskId(@PathVariable(value = "id") Long taskId,
                                                                         @RequestHeader("Authorization") String token) {
-        log.info("RestController.findAttachments.in id = {}", taskId);
+        log.info("TaskController.findAttachments.in id = {}", taskId);
         helper.obtainToken(token);
         var result = findAttachmentsByTaskIdOperation.process(taskId);
         var builder = new MultipartBodyBuilder();
@@ -149,7 +149,7 @@ public class TaskController {
             MediaType.valueOf(a.getType())
         ));
         var response = builder.build();
-        log.info("RestController.findAttachments.out");
+        log.info("TaskController.findAttachments.out");
         return response;
     }
 
@@ -158,10 +158,10 @@ public class TaskController {
     @ResponseBody
     public byte[] findAttachmentsById(@PathVariable(value = "id") Long id,
                                       @RequestHeader("Authorization") String token) {
-        log.info("RestController.findAttachments.in id = {}", id);
+        log.info("TaskController.findAttachments.in id = {}", id);
         helper.obtainToken(token);
         var result = findAttachmentByIdOperation.process(id).getContent();
-        log.info("RestController.findAttachments.out");
+        log.info("TaskController.findAttachments.out");
         return result;
     }
 }

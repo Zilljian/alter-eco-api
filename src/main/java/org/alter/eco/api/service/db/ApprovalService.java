@@ -48,11 +48,9 @@ public class ApprovalService {
             .execute();
     }
 
-    public void insertClientVote(VoteForTaskRequest request) {
+    public void insertUserVote(VoteForTaskRequest request) {
         db.insertInto(voteTable)
             .set(request.voteRecord())
-            .onConflictOnConstraint(voteTable.getPrimaryKey())
-            .doNothing()
             .execute();
     }
 

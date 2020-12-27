@@ -2,7 +2,6 @@ package org.alter.eco.api.logic.reward;
 
 import lombok.RequiredArgsConstructor;
 import org.alter.eco.api.jooq.tables.records.AccountRecord;
-import org.alter.eco.api.logic.task.CreateTaskOperation.CreateTaskRequest;
 import org.alter.eco.api.service.db.RewardService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNullElse;
 import static org.alter.eco.api.exception.ApplicationError.ACCOUNT_NOT_FOUND_BY_ID;
+import static org.alter.eco.api.exception.ApplicationError.INTERNAL_ERROR;
 
 @Component
 @RequiredArgsConstructor
@@ -22,9 +22,14 @@ public class GetAccountByIdOperation {
 
     public AccountRecord process() {
         log.info("GetAccountByIdOperation.process.in");
-        var result = internalProcess();
-        log.info("GetAccountByIdOperation.process.out");
-        return result;
+        try {
+            var result = internalProcess();
+            log.info("GetAccountByIdOperation.process.out");
+            return result;
+        } catch (Exception e) {
+            log.warn("GetAccountByIdOperation.process.thrown", e);
+            throw INTERNAL_ERROR.exception(e);
+        }
     }
 
     private AccountRecord internalProcess() {

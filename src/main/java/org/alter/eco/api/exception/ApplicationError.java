@@ -2,14 +2,18 @@ package org.alter.eco.api.exception;
 
 public enum ApplicationError {
 
-    TASK_NOT_FOUND_BY_ID(400, "Task not found error"),
+    NOT_FOUND_BY_ID(400, "Task not found error"),
     ATTACHMENTS_NOT_FOUND(400, "Attachments not found error"),
 
     ENTRY_NOT_FOUND_BY_TASK_ID(400, "Entry not found error"),
 
+    NOT_ENOUGH_AMOUNT(400, "Not enough amount"),
+
     ACCOUNT_NOT_FOUND_BY_ID(400, "Account not found error"),
     NOT_ENOUGH_MONEY(400, "Not enough money"),
-    WRONG_STATUS(400, "Account status is not 'ACTIVE'");
+    WRONG_STATUS(400, "Account status is not 'ACTIVE'"),
+
+    INTERNAL_ERROR(500, "Internal server error");
 
     public final int status;
     public final String description;

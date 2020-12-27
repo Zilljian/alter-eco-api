@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import static java.util.stream.Collectors.toList;
-import static org.alter.eco.api.exception.ApplicationError.TASK_NOT_FOUND_BY_ID;
+import static org.alter.eco.api.exception.ApplicationError.NOT_FOUND_BY_ID;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class FindTaskByIdOperation {
 
     private Task internalProcess(Long id) {
         var task = taskService.findById(id)
-            .orElseThrow(() -> TASK_NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
+            .orElseThrow(() -> NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
         var attachments = attachmentService.findIdsByTaskId(task.getId()).stream()
             .map(AttachmentRecord::getId)
             .collect(toList());

@@ -20,9 +20,9 @@ public class ControllerHelper {
         try {
             var uuid = authService.getUuidFromToken(token);
             MDC.put("user", uuid);
-            log.info("Request by user with uuid = {}", uuid);
+            log.info("ControllerHelper.obtainToken Request by user with uuid = {}", uuid);
         } catch (Exception e) {
-            log.error("Error while obtaining token", e);
+            log.error("ControllerHelper.obtainToken.thrown Error while obtaining token", e);
         }
     }
 }

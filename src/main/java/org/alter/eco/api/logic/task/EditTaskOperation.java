@@ -10,16 +10,19 @@ import org.alter.eco.api.service.db.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
-import static org.alter.eco.api.exception.ApplicationError.TASK_NOT_FOUND_BY_ID;
+import static org.alter.eco.api.exception.ApplicationError.NOT_FOUND_BY_ID;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(propagation = Propagation.REQUIRED)
 public class EditTaskOperation {
 
     private final static Logger log = LoggerFactory.getLogger(EditTaskOperation.class);
@@ -36,7 +39,7 @@ public class EditTaskOperation {
     private void internalProcess(EditTaskRequest request) {
         var id = request.newTask.getId();
         var oldTask = taskService.findById(id)
-            .orElseThrow(() -> TASK_NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
+            .orElseThrow(() -> NOT_FOUND_BY_ID.exception("No such task exist with id = " + id));
         var updated = updateRequest(request.newTask, oldTask);
         if (request.detach) {
             attachmentService.detach(id);
@@ -44,7 +47,6 @@ public class EditTaskOperation {
         var attachmentRecords = request.attachPhotosRequest.stream()
             .map(AttachPhotosRequest::asRecord)
             .collect(toList());
-
         taskService.update(updated);
         attachmentService.attach(attachmentRecords);
     }

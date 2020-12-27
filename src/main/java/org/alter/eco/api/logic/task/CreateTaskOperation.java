@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +27,7 @@ import static org.alter.eco.api.exception.ValidationError.INVALID_ATTACH_REQUEST
 
 @Component
 @RequiredArgsConstructor
+@Transactional(propagation = Propagation.REQUIRED)
 public class CreateTaskOperation {
 
     private final static Logger log = LoggerFactory.getLogger(CreateTaskOperation.class);

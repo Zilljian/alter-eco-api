@@ -9,11 +9,14 @@ import org.alter.eco.api.service.db.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(propagation = Propagation.REQUIRED)
 public class UpdateTaskStatusOperation {
 
     private final static Logger log = LoggerFactory.getLogger(UpdateTaskStatusOperation.class);

@@ -30,7 +30,7 @@ public class ApprovalController {
     public void voteForTask(@RequestParam(value = "taskId") Long taskId,
                             @RequestParam(value = "type") VoteType voteType,
                             @RequestHeader("Authorization") String token) {
-        log.info("RestController.voteForTask.in taskId = {}, voteType = {}", taskId, voteType);
+        log.info("ApprovalController.voteForTask.in taskId = {}, voteType = {}", taskId, voteType);
         helper.obtainToken(token);
         var request = new VoteForTaskRequest(
             requireNonNullElse(MDC.get("user"), "default"),
@@ -38,6 +38,6 @@ public class ApprovalController {
             voteType
         );
         voteForTaskOperation.process(request);
-        log.info("RestController.voteForTask.out");
+        log.info("ApprovalController.voteForTask.out");
     }
 }

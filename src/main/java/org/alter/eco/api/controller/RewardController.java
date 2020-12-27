@@ -23,10 +23,10 @@ public class RewardController {
 
     @GetMapping(value = "/account")
     public Account getAccountByUser(@RequestHeader("Authorization") String token) {
-        log.info("RestController.getAccountById.in");
+        log.info("RewardController.getAccountById.in");
         helper.obtainToken(token);
         var result = getAccountByIdOperation.process();
-        log.info("RestController.getAccountById.out");
+        log.info("RewardController.getAccountById.out");
         return Account.fromRecord(result);
     }
 }
