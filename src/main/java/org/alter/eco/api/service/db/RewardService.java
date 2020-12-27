@@ -44,7 +44,7 @@ public class RewardService {
         return db.update(accountTable)
             .set(accountTable.STATUS, request.status())
             .where(accountTable.USER_ID.equal(request.userUuid()))
-            .returning(accountTable.ID)
+            .returning(accountTable.USER_ID)
             .fetchOne();
     }
 
@@ -58,7 +58,7 @@ public class RewardService {
             .set(accountTable.UPDATED, LocalDateTime.now())
             .where(accountTable.USER_ID.equal(request.userUuid()))
             .and(accountTable.STATUS.equal(AccountStatus.ACTIVE))
-            .returning(accountTable.ID)
+            .returning(accountTable.USER_ID)
             .fetchOne();
     }
 
@@ -72,7 +72,7 @@ public class RewardService {
             .set(accountTable.UPDATED, LocalDateTime.now())
             .where(accountTable.USER_ID.equal(request.userUuid()))
             .and(accountTable.STATUS.equal(AccountStatus.ACTIVE))
-            .returning(accountTable.ID)
+            .returning(accountTable.USER_ID)
             .fetchOne();
     }
 }
