@@ -14,8 +14,8 @@ springdoc:
     path: /api/swagger
 operation:
   approval:
-    waiting-for-approve-m: 5
-    resolved-m: 5
+    waiting-for-approve-m: 10
+    resolved-m: 10
     waiting-for-approve-count: 2
     resolved-count: 2
     reward:

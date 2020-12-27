@@ -47,10 +47,7 @@ public class CreateTaskOperation {
 
         var taskId = taskService.insert(request.newTask);
         var attachPhotos = request.attachPhotosRequest.stream()
-            .map(a -> {
-                a.setTaskId(taskId);
-                return a;
-            })
+            .peek(a -> a.setTaskId(taskId))
             .map(AttachPhotosRequest::validate)
             .map(AttachPhotosRequest::asRecord)
             .collect(toList());
@@ -79,9 +76,7 @@ public class CreateTaskOperation {
         public final byte[] content;
 
         public AttachPhotosRequest validate() {
-            if (isNull(taskId)) {
-                throw INVALID_ATTACH_REQUEST.exception("Task id cannot be null");
-            } else if (isNull(contentType)) {
+            if (isNull(contentType)) {
                 throw INVALID_ATTACH_REQUEST.exception("Content-Type cannot be null");
             } else if (isNull(content)) {
                 throw INVALID_ATTACH_REQUEST.exception("Content cannot be null");

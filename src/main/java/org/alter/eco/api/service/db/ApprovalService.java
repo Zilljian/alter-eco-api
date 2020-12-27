@@ -37,13 +37,15 @@ public class ApprovalService {
     public void insertTaskVotePlus(VoteForTaskRequest request) {
         db.update(approvalTable)
             .set(approvalTable.COUNTER, approvalTable.COUNTER.add(1))
-            .where(approvalTable.TASK_ID.equal(request.taskId()));
+            .where(approvalTable.TASK_ID.equal(request.taskId()))
+            .execute();
     }
 
     public void insertTaskVoteMinus(VoteForTaskRequest request) {
         db.update(approvalTable)
             .set(approvalTable.COUNTER, approvalTable.COUNTER.sub(1))
-            .where(approvalTable.TASK_ID.equal(request.taskId()));
+            .where(approvalTable.TASK_ID.equal(request.taskId()))
+            .execute();
     }
 
     public void insertClientVote(VoteForTaskRequest request) {
