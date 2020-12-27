@@ -3,6 +3,8 @@ package org.alter.eco.api.logic.task;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.alter.eco.api.jooq.enums.TaskStatus;
+import org.alter.eco.api.model.ChangingStatus;
+import org.alter.eco.api.service.db.ApprovalService;
 import org.alter.eco.api.service.db.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ public class UpdateTaskStatusOperation {
     private final static Logger log = LoggerFactory.getLogger(UpdateTaskStatusOperation.class);
 
     public final TaskService taskService;
+    private final ApprovalService approvalService;
 
     public void process(UpdateStatusRequest request) {
         log.info("UpdateTaskStatusOperation.process.in request = {}", request);
@@ -25,14 +28,21 @@ public class UpdateTaskStatusOperation {
     }
 
     private void internalProcess(UpdateStatusRequest request) {
-        var task = taskService.findById(request.taskId)
-            .orElseThrow(() -> new RuntimeException("No such task exist with id = " + request.taskId));
+        var taskId = request.taskId;
+        var task = taskService.findById(taskId)
+            .orElseThrow(() -> new RuntimeException("No such task exist with id = " + taskId));
         var oldTaskStatus = task
             .getStatus();
         var newStatus = request.status;
+        if (newStatus == TaskStatus.APPROVED) {
+            newStatus = TaskStatus.TO_DO;
+        }
         task.setStatus(newStatus);
         validateOver(oldTaskStatus, newStatus);
         taskService.update(task);
+        if (newStatus == TaskStatus.RESOLVED) {
+            approvalService.insertOnConflictUpdate(ChangingStatus.resolvedWith(taskId));
+        }
     }
 
     @ToString

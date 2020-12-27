@@ -1,8 +1,8 @@
 package org.alter.eco.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.alter.eco.api.jooq.tables.records.AccountRecord;
 import org.alter.eco.api.logic.reward.GetAccountByIdOperation;
+import org.alter.eco.api.model.Account;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,11 +22,11 @@ public class RewardController {
     private final GetAccountByIdOperation getAccountByIdOperation;
 
     @GetMapping(value = "/account")
-    public AccountRecord getAccountByUser(@RequestHeader("Authorization") String token) {
+    public Account getAccountByUser(@RequestHeader("Authorization") String token) {
         log.info("RestController.getAccountById.in");
         helper.obtainToken(token);
         var result = getAccountByIdOperation.process();
         log.info("RestController.getAccountById.out");
-        return result;
+        return Account.fromRecord(result);
     }
 }

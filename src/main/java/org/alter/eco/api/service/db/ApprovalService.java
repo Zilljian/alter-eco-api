@@ -9,8 +9,8 @@ import org.alter.eco.api.jooq.tables.records.VoteRecord;
 import org.alter.eco.api.logic.approval.ApproveScheduledOperation.FindByTasksForTrashingRequest;
 import org.alter.eco.api.logic.approval.ApproveScheduledOperation.FindByTimeShiftAndCounterRequest;
 import org.alter.eco.api.logic.approval.ApproveScheduledOperation.FindClientIdsForAccrualRequest;
-import org.alter.eco.api.logic.approval.ObtainTaskOperation.ObtainTaskRequest;
 import org.alter.eco.api.logic.approval.VoteForTaskOperation.VoteForTaskRequest;
+import org.alter.eco.api.model.ChangingStatus;
 import org.jooq.DSLContext;
 import org.jooq.types.DayToSecond;
 import org.springframework.stereotype.Component;
@@ -49,26 +49,22 @@ public class ApprovalService {
     public void insertClientVote(VoteForTaskRequest request) {
         db.insertInto(voteTable)
             .set(request.voteRecord())
+            .onConflictOnConstraint(voteTable.getPrimaryKey())
+            .doNothing()
             .execute();
     }
 
-    public void insertOnConflictUpdate(ObtainTaskRequest request) {
+    public void insertOnConflictUpdate(ChangingStatus request) {
         var approval = new ApprovalRecord();
-        approval.setTaskId(request.taskId);
-        approval.setStatus(request.status);
+        approval.setTaskId(request.taskId());
+        approval.setStatus(request.status());
 
         db.insertInto(approvalTable)
             .set(approval)
             .onConflictOnConstraint(approvalTable.getPrimaryKey())
             .doUpdate()
-            .set(approvalTable.STATUS, request.status)
-            .where(approvalTable.TASK_ID.equal(request.taskId))
-            .execute();
-    }
-
-    public void delete(ObtainTaskRequest request) {
-        db.deleteFrom(approvalTable)
-            .where(approvalTable.TASK_ID.equal(request.taskId))
+            .set(approvalTable.STATUS, request.status())
+            .where(approvalTable.TASK_ID.equal(request.taskId()))
             .execute();
     }
 

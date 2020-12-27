@@ -7,6 +7,8 @@ import lombok.ToString;
 import org.alter.eco.api.jooq.enums.TaskStatus;
 import org.alter.eco.api.jooq.tables.records.AttachmentRecord;
 import org.alter.eco.api.jooq.tables.records.TaskRecord;
+import org.alter.eco.api.model.ChangingStatus;
+import org.alter.eco.api.service.db.ApprovalService;
 import org.alter.eco.api.service.db.AttachmentService;
 import org.alter.eco.api.service.db.TaskService;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ public class CreateTaskOperation {
 
     private final TaskService taskService;
     private final AttachmentService attachmentService;
+    private final ApprovalService approvalService;
 
     public Long process(CreateTaskRequest request) {
         log.info("CreateTaskOperation.process.in id = {}", request);
@@ -39,7 +42,7 @@ public class CreateTaskOperation {
 
     private Long internalProcess(CreateTaskRequest request) {
         var newTask = request.newTask;
-        newTask.setStatus(TaskStatus.CREATED);
+        newTask.setStatus(TaskStatus.WAITING_FOR_APPROVE);
         newTask.setCreatedBy(requireNonNullElse(MDC.get("user"), "default"));
 
         var taskId = taskService.insert(request.newTask);
@@ -52,6 +55,7 @@ public class CreateTaskOperation {
             .map(AttachPhotosRequest::asRecord)
             .collect(toList());
         attachmentService.attach(attachPhotos);
+        approvalService.insertOnConflictUpdate(ChangingStatus.waitingForApproveWith(taskId));
         return taskId;
     }
 
