@@ -22,15 +22,11 @@
   </dependencyManagement>
 
   <properties>
-    <java.version>15</java.version>
+    <java.version>14</java.version>
   </properties>
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
@@ -40,20 +36,6 @@
           <compilerArgs>
             --enable-preview
           </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>org.alter.eco.api.Application</mainClass>
-            </manifest>
-          </archive>
         </configuration>
       </plugin>
       <plugin>
