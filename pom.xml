@@ -7,6 +7,7 @@
   <groupId>org.alter.eco</groupId>
   <artifactId>alter-eco-api</artifactId>
   <version>1.0.0</version>
+  <name>api</name>
 
   <dependencyManagement>
     <dependencies>
@@ -26,6 +27,10 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
