@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: alter-eco-api
+  datasource:
+    url: jdbc:postgresql://localhost:54320/alter_eco
+    username: postgres
+    password: postgres
