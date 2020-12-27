@@ -32,8 +32,6 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
-          <release>${java.version}</release>
-          <forceJavacCompilerUse>true</forceJavacCompilerUse>
           <compilerArgs>
             --enable-preview
           </compilerArgs>
