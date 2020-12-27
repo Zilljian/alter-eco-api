@@ -2,6 +2,6 @@ spring:
   application:
     name: alter-eco-api
   datasource:
-    url: jdbc:postgresql://localhost:54320/alter_eco
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://ec2-54-228-250-82.eu-west-1.compute.amazonaws.com:5432/d7cehdv1kl8rh8
+    username: seqppzdktjmzzo
+    password: 79bea1489f3e3f1ac418bbd0a34e365a35ae7198d5304e0fac3554f99428a755
