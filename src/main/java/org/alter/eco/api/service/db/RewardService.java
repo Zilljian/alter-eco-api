@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Component
@@ -68,7 +68,7 @@ public class RewardService {
             .onConflictOnConstraint(accountTable.getPrimaryKey())
             .doUpdate()
             .set(accountTable.AMOUNT, accountTable.AMOUNT.add(request.amount()))
-            .set(accountTable.UPDATED, LocalDateTime.now())
+            .set(accountTable.UPDATED, OffsetDateTime.now())
             .where(accountTable.USER_ID.equal(request.userUuid()))
             .and(accountTable.STATUS.equal(AccountStatus.ACTIVE))
             .returning(accountTable.USER_ID)
@@ -81,7 +81,7 @@ public class RewardService {
         log.info("RewardService.writeoffAccount.in request = {}", request);
         var result = db.update(accountTable)
             .set(accountTable.AMOUNT, accountTable.AMOUNT.sub(request.amount()))
-            .set(accountTable.UPDATED, LocalDateTime.now())
+            .set(accountTable.UPDATED, OffsetDateTime.now())
             .where(accountTable.USER_ID.equal(request.userUuid()))
             .and(accountTable.STATUS.equal(AccountStatus.ACTIVE))
             .returning(accountTable.USER_ID)

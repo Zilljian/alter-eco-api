@@ -23,8 +23,8 @@ public record Account(
             record.getUserId(),
             record.getAmount(),
             record.getStatus(),
-            record.getUpdated(),
-            record.getCreated()
+            record.getUpdated().toLocalDateTime(),
+            record.getCreated().toLocalDateTime()
         );
     }
 }
