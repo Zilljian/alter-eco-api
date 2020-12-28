@@ -2,7 +2,8 @@ package org.alter.eco.api.exception;
 
 public enum InvocationError {
 
-    POSTGRES_INVOCATION_ERROR(500, "Error invoking Postgres");
+    POSTGRES_INVOCATION_ERROR(500, "Error invoking Postgres"),
+    FIREBASE_INVOCATION_ERROR(500, "Error invoking Firebase");
 
     public final int status;
     public final String description;
