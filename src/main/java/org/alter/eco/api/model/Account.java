@@ -1,34 +1,30 @@
 package org.alter.eco.api.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alter.eco.api.jooq.enums.AccountStatus;
 import org.alter.eco.api.jooq.tables.records.AccountRecord;
 
 import java.time.LocalDateTime;
 
-@Builder
-@ToString
-@EqualsAndHashCode(exclude = {"updated", "created"})
-@RequiredArgsConstructor
-public class Account {
+public record Account(
+    @JsonProperty("userId") String userId,
+    @JsonProperty("amount") Long amount,
+    @JsonProperty("status") AccountStatus status,
+    @JsonProperty("updated") LocalDateTime updated,
+    @JsonProperty("created") LocalDateTime created) {
 
-    public final Long id;
-    public final String userId;
-    public final Long amount;
-    public final AccountStatus status;
-    public final LocalDateTime updated;
-    public final LocalDateTime created;
+    @JsonCreator
+    public Account {
+    }
 
     public static Account fromRecord(AccountRecord record) {
-        return Account.builder()
-            .userId(record.getUserId())
-            .amount(record.getAmount())
-            .status(record.getStatus())
-            .updated(record.getUpdated())
-            .created(record.getCreated())
-            .build();
+        return new Account(
+            record.getUserId(),
+            record.getAmount(),
+            record.getStatus(),
+            record.getUpdated(),
+            record.getCreated()
+        );
     }
 }
