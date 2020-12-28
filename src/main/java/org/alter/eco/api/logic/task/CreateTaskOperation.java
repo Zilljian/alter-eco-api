@@ -48,7 +48,7 @@ public class CreateTaskOperation {
         newTask.setStatus(TaskStatus.WAITING_FOR_APPROVE);
         newTask.setCreatedBy(requireNonNullElse(MDC.get("user"), "default"));
 
-        var taskId = taskService.insert(newTask);
+        var taskId = taskService.insert(newTask).getId();
         var attachPhotos = request.attachPhotosRequest.stream()
             .peek(a -> a.setTaskId(taskId))
             .map(AttachPhotosRequest::validate)
