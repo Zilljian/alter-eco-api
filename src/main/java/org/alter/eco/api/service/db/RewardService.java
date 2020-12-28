@@ -79,11 +79,7 @@ public class RewardService {
 
     public AccountRecord writeoffAccount(WriteoffRequest request) {
         log.info("RewardService.writeoffAccount.in request = {}", request);
-        var result = db.insertInto(accountTable)
-            .set(accountTable.USER_ID, request.userUuid())
-            .set(accountTable.AMOUNT, request.amount())
-            .onConflictOnConstraint(accountTable.getPrimaryKey())
-            .doUpdate()
+        var result = db.update(accountTable)
             .set(accountTable.AMOUNT, accountTable.AMOUNT.sub(request.amount()))
             .set(accountTable.UPDATED, LocalDateTime.now())
             .where(accountTable.USER_ID.equal(request.userUuid()))

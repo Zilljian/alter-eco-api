@@ -68,6 +68,10 @@ public class ShopService {
             .set(orderTable.CUSTOMER, userUuid)
             .set(orderTable.ITEM_ID, itemId)
             .execute();
+        db.update(itemTable)
+            .set(itemTable.AMOUNT, itemTable.AMOUNT.sub(1))
+            .where(itemTable.ID.equal(itemId))
+            .execute();
         log.info("ShopService.purchaseItem.out");
     }
 
