@@ -6,9 +6,11 @@ import org.jooq.SortField;
 public enum Sort {
 
     REWARD_DESC(Task.TASK.REWARD.desc()),
+    ID_DESC(Task.TASK.ID.desc()),
     CREATED_DESC(Task.TASK.CREATED.desc()),
     DUE_DATE_DESC(Task.TASK.DUE_DATE.desc()),
     REWARD(Task.TASK.REWARD.asc()),
+    ID(Task.TASK.ID.asc()),
     CREATED(Task.TASK.CREATED.asc()),
     DUE_DATE(Task.TASK.DUE_DATE.asc());
 
