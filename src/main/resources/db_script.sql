@@ -153,4 +153,31 @@ BEGIN
 END;
 $$;
 
-select public.populate_tasks(1000);
+/* For test population */
+CREATE OR REPLACE FUNCTION random_in_range(min INTEGER, max INTEGER) RETURNS BIGINT
+AS
+$$
+SELECT floor((min + (max - min + 1) * random()))::BIGINT;
+$$ LANGUAGE sql;
+
+/* For test population */
+CREATE OR REPLACE FUNCTION populate_shop(n INTEGER) RETURNS VOID
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    counter INTEGER := 0;
+BEGIN
+    LOOP
+        EXIT WHEN counter = n;
+        counter := counter + 1;
+        INSERT INTO public.item (title, description, price, type, amount, created_by)
+        VALUES (CONCAT('Item ', counter),
+                CONCAT('Some description of shop item ', counter),
+                random_in_range(100, 50000),
+                (SELECT t FROM unnest(enum_range(NULL::item_type)) t ORDER BY random() LIMIT 1),
+                random_in_range(0, 50),
+                'system');
+    END LOOP;
+END;
+$$;
