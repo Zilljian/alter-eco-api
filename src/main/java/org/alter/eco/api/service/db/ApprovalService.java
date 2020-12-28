@@ -88,11 +88,11 @@ public class ApprovalService {
         var result = db.deleteFrom(approvalTable)
             .where(
                 approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.approveMinutesThreshold()))).lessOrEqual(LocalDateTime.now())
-                    .and(approvalTable.COUNTER.greaterOrEqual(request.approveCountThreshold()))
+                    .and(approvalTable.COUNTER.lessThan(request.approveCountThreshold()))
                     .and(approvalTable.STATUS.equal(TaskStatus.WAITING_FOR_APPROVE))
             ).or(
                 approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.completeMinutesThreshold()))).lessOrEqual(LocalDateTime.now())
-                    .and(approvalTable.COUNTER.greaterOrEqual(request.completeCountThreshold()))
+                    .and(approvalTable.COUNTER.lessThan(request.completeCountThreshold()))
                     .and(approvalTable.STATUS.equal(TaskStatus.RESOLVED))
             )
             .returning(approvalTable.TASK_ID, approvalTable.STATUS)
