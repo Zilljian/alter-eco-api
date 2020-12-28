@@ -1,6 +1,7 @@
 package org.alter.eco.api.logic.approval;
 
 import lombok.RequiredArgsConstructor;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.enums.VoteType;
 import org.alter.eco.api.jooq.tables.records.VoteRecord;
 import org.alter.eco.api.service.db.ApprovalService;
@@ -27,8 +28,11 @@ public class VoteForTaskOperation {
         log.info("VoteForTaskOperation.process.in id = {}", request);
         try {
             internalProcess(request);
+        } catch (HttpCodeException e) {
+            log.error("VoteForTaskOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("VoteForTaskOperation.process.thrown", e);
+            log.error("VoteForTaskOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
         log.info("VoteForTaskOperation.process.out");

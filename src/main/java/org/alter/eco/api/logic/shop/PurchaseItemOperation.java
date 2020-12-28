@@ -1,6 +1,7 @@
 package org.alter.eco.api.logic.shop;
 
 import lombok.RequiredArgsConstructor;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.logic.reward.WriteoffByUserIdOperation;
 import org.alter.eco.api.logic.reward.WriteoffByUserIdOperation.WriteoffRequest;
 import org.alter.eco.api.service.db.ShopService;
@@ -30,8 +31,11 @@ public class PurchaseItemOperation {
         log.info("PurchaseItemOperation.process.in itemId = {}", itemId);
         try {
             internalProcess(itemId);
+        }  catch (HttpCodeException e) {
+            log.error("PurchaseItemOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("PurchaseItemOperation.process.thrown", e);
+            log.error("PurchaseItemOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
         log.info("PurchaseItemOperation.process.out");

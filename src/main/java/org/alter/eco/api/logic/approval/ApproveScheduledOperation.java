@@ -2,6 +2,7 @@ package org.alter.eco.api.logic.approval;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.enums.TaskStatus;
 import org.alter.eco.api.jooq.enums.VoteType;
 import org.alter.eco.api.logic.reward.AccrualByClientIdOperation;
@@ -29,13 +30,13 @@ public class ApproveScheduledOperation extends Thread {
     private static final Logger log = LoggerFactory.getLogger(ApproveScheduledOperation.class);
 
     @Value("${operation.approval.waiting-for-approve-m}")
-    private Long waitingForApproveStatusShift;
+    private Long WAITING_FOR_APPROVE_THRESHOLD_MINUTES;
     @Value("${operation.approval.resolved-m}")
-    private Long resolvedStatusShift;
+    private Long RESOLVED_THRESHOLD_MINUTES;
     @Value("${operation.approval.waiting-for-approve-count}")
-    private Long waitingForApproveStatusCount;
+    private Long WAITING_FOR_APPROVE_THRESHOLD_COUNT;
     @Value("${operation.approval.resolved-count}")
-    private Long resolvedStatusCount;
+    private Long RESOLVED_THRESHOLD_COUNT;
     @Value("${operation.approval.reward.approve-attendee}")
     private Long APPROVE_REWARD;
     @Value("${operation.approval.reward.complete-attendee}")
@@ -57,9 +58,14 @@ public class ApproveScheduledOperation extends Thread {
 
     @EventListener(ApplicationStartedEvent.class)
     public void init() {
-        this.approvingRequest = FindByTimeShiftAndCounterRequest.ofWaitingForApprove(waitingForApproveStatusShift, waitingForApproveStatusCount);
-        this.completingRequest = FindByTimeShiftAndCounterRequest.ofResolved(resolvedStatusShift, resolvedStatusCount);
-        this.trashingRequest = new FindByTasksForTrashingRequest(waitingForApproveStatusShift, resolvedStatusShift);
+        this.approvingRequest = FindByTimeShiftAndCounterRequest
+            .ofWaitingForApprove(WAITING_FOR_APPROVE_THRESHOLD_MINUTES, WAITING_FOR_APPROVE_THRESHOLD_COUNT);
+        this.completingRequest = FindByTimeShiftAndCounterRequest
+            .ofResolved(RESOLVED_THRESHOLD_MINUTES, RESOLVED_THRESHOLD_COUNT);
+        this.trashingRequest = new FindByTasksForTrashingRequest(WAITING_FOR_APPROVE_THRESHOLD_MINUTES,
+                                                                 RESOLVED_THRESHOLD_MINUTES,
+                                                                 WAITING_FOR_APPROVE_THRESHOLD_COUNT,
+                                                                 RESOLVED_THRESHOLD_COUNT);
     }
 
     @Override
@@ -69,6 +75,9 @@ public class ApproveScheduledOperation extends Thread {
         try {
             internalRun();
             log.info("ApproveScheduledOperation.run.out");
+        } catch (HttpCodeException e) {
+            log.error("ApproveScheduledOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
             log.error("ApproveScheduledOperation.run.thrown Pause executor for 30 seconds", e);
             Thread.sleep(30 * 1000);
@@ -81,7 +90,7 @@ public class ApproveScheduledOperation extends Thread {
                 approvalService.findClientIdsForAccrual(request(a.getTaskId(), VoteType.APPROVE))
                     .forEach(u -> accrualByClientIdOperation.process(AccrualRequest.system(u, COMPLETE_REWARD)));
                 updateTaskStatusOperation.process(new UpdateStatusRequest(a.getTaskId(), TaskStatus.COMPLETED));
-                approvalService.deleteClients(a.getTaskId());
+                approvalService.deleteUserVotes(a.getTaskId());
                 var task = taskService.findById(a.getTaskId())
                     .orElseThrow(() -> NOT_FOUND_BY_ID.exception("No such task exist with id = " + a.getTaskId()));
                 accrualByClientIdOperation.process(AccrualRequest.system(task.getAssignee(), task.getReward()));
@@ -94,7 +103,7 @@ public class ApproveScheduledOperation extends Thread {
                 approvalService.findClientIdsForAccrual(request(a.getTaskId(), VoteType.APPROVE))
                     .forEach(u -> accrualByClientIdOperation.process(AccrualRequest.system(u, APPROVE_REWARD)));
                 updateTaskStatusOperation.process(new UpdateStatusRequest(a.getTaskId(), TaskStatus.TO_DO));
-                approvalService.deleteClients(a.getTaskId());
+                approvalService.deleteUserVotes(a.getTaskId());
             }
         );
 
@@ -103,7 +112,7 @@ public class ApproveScheduledOperation extends Thread {
                 approvalService.findClientIdsForAccrual(request(a.getTaskId(), VoteType.REJECT))
                     .forEach(u -> accrualByClientIdOperation.process(AccrualRequest.system(u, TRASH_REWARD)));
                 updateTaskStatusOperation.process(new UpdateStatusRequest(a.getTaskId(), TaskStatus.TRASHED));
-                approvalService.deleteClients(a.getTaskId());
+                approvalService.deleteUserVotes(a.getTaskId());
             }
         );
     }
@@ -112,18 +121,19 @@ public class ApproveScheduledOperation extends Thread {
         return new FindClientIdsForAccrualRequest(taskId, voteType);
     }
 
-    public static record FindByTimeShiftAndCounterRequest(Long shift, Long counter, TaskStatus status) {
+    public static record FindByTimeShiftAndCounterRequest(Long minutesThreshold, Long counterThreshold, TaskStatus status) {
 
-        public static FindByTimeShiftAndCounterRequest ofWaitingForApprove(Long shift, Long counter) {
-            return new FindByTimeShiftAndCounterRequest(shift, counter, TaskStatus.WAITING_FOR_APPROVE);
+        public static FindByTimeShiftAndCounterRequest ofWaitingForApprove(Long minutesThreshold, Long counterThreshold) {
+            return new FindByTimeShiftAndCounterRequest(minutesThreshold, counterThreshold, TaskStatus.WAITING_FOR_APPROVE);
         }
 
-        public static FindByTimeShiftAndCounterRequest ofResolved(Long shift, Long counter) {
-            return new FindByTimeShiftAndCounterRequest(shift, counter, TaskStatus.RESOLVED);
+        public static FindByTimeShiftAndCounterRequest ofResolved(Long minutesThreshold, Long counterThreshold) {
+            return new FindByTimeShiftAndCounterRequest(minutesThreshold, counterThreshold, TaskStatus.RESOLVED);
         }
     }
 
-    public static record FindByTasksForTrashingRequest(Long shift, Long completingShift) {}
+    public static record FindByTasksForTrashingRequest(Long approveMinutesThreshold, Long completeMinutesThreshold,
+                                                       Long approveCountThreshold, Long completeCountThreshold) {}
 
     public static record FindClientIdsForAccrualRequest(Long taskId, VoteType type) {}
 }

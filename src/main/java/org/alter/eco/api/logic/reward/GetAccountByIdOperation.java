@@ -1,6 +1,7 @@
 package org.alter.eco.api.logic.reward;
 
 import lombok.RequiredArgsConstructor;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.tables.records.AccountRecord;
 import org.alter.eco.api.service.db.RewardService;
 import org.slf4j.Logger;
@@ -26,8 +27,11 @@ public class GetAccountByIdOperation {
             var result = internalProcess();
             log.info("GetAccountByIdOperation.process.out");
             return result;
+        } catch (HttpCodeException e){
+            log.error("GetAccountByIdOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("GetAccountByIdOperation.process.thrown", e);
+            log.error("GetAccountByIdOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
     }

@@ -13,6 +13,8 @@ import org.alter.eco.api.logic.approval.VoteForTaskOperation.VoteForTaskRequest;
 import org.alter.eco.api.model.ChangingStatus;
 import org.jooq.DSLContext;
 import org.jooq.types.DayToSecond;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class ApprovalService {
+
+    private static final Logger log = LoggerFactory.getLogger(ApprovalService.class);
 
     private final DSLContext db;
 
@@ -70,16 +74,22 @@ public class ApprovalService {
 
     public List<ApprovalRecord> findTasksForTrashing(FindByTasksForTrashingRequest request) {
         return db.deleteFrom(approvalTable)
-            .where(approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.shift()))).lessOrEqual(LocalDateTime.now()))
-            .and(approvalTable.STATUS.in(TaskStatus.WAITING_FOR_APPROVE, TaskStatus.RESOLVED))
+            .where(
+                approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.approveMinutesThreshold()))).lessOrEqual(LocalDateTime.now())
+                    .and(approvalTable.COUNTER.greaterOrEqual(request.approveCountThreshold()))
+                    .and(approvalTable.STATUS.equal(TaskStatus.WAITING_FOR_APPROVE))
+            ).or(
+                approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.completeMinutesThreshold()))).lessOrEqual(LocalDateTime.now())
+                    .and(approvalTable.COUNTER.greaterOrEqual(request.completeCountThreshold()))
+                    .and(approvalTable.STATUS.equal(TaskStatus.RESOLVED))
+            )
             .returning(approvalTable.TASK_ID, approvalTable.STATUS)
             .fetch();
     }
 
     public List<ApprovalRecord> findTasksForApproving(FindByTimeShiftAndCounterRequest request) {
         return db.deleteFrom(approvalTable)
-            .where(approvalTable.CREATED.add(DayToSecond.minute(String.valueOf(request.shift()))).greaterOrEqual(LocalDateTime.now()))
-            .and(approvalTable.COUNTER.greaterOrEqual(request.counter()))
+            .where(approvalTable.COUNTER.greaterOrEqual(request.counterThreshold()))
             .and(approvalTable.STATUS.equal(request.status()))
             .returning(approvalTable.TASK_ID, approvalTable.STATUS)
             .fetch();
@@ -94,7 +104,7 @@ public class ApprovalService {
             .map(VoteRecord::getClientId);
     }
 
-    public void deleteClients(Long taskId) {
+    public void deleteUserVotes(Long taskId) {
         db.deleteFrom(voteTable)
             .where(voteTable.TASK_ID.equal(taskId))
             .execute();

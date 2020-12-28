@@ -2,6 +2,7 @@ package org.alter.eco.api.logic.shop;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.tables.records.ItemRecord;
 import org.alter.eco.api.logic.shop.CreateItemOperation.ItemAttachPhotosRequest;
 import org.alter.eco.api.service.db.ItemAttachmentService;
@@ -31,8 +32,11 @@ public class EditItemOperation {
         log.info("EditItemOperation.process.in request = {}", request);
         try {
             internalProcess(request);
+        }  catch (HttpCodeException e) {
+            log.error("EditItemOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("EditItemOperation.process.thrown", e);
+            log.error("EditItemOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
         log.info("EditItemOperation.process.out");

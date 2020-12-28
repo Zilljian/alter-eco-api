@@ -2,6 +2,7 @@ package org.alter.eco.api.logic.reward;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.enums.AccountStatus;
 import org.alter.eco.api.jooq.tables.records.EventRecord;
 import org.alter.eco.api.service.db.RewardService;
@@ -29,8 +30,11 @@ public class WriteoffByUserIdOperation {
         log.info("WriteoffByClientIdOperation.process.in id = {}", request);
         try {
             internalProcess(request);
+        } catch (HttpCodeException e) {
+            log.error("WriteoffByClientIdOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("WriteoffByClientIdOperation.process.thrown", e);
+            log.error("WriteoffByClientIdOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
         log.info("WriteoffByClientIdOperation.process.out");

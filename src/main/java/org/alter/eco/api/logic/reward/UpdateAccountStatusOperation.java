@@ -1,6 +1,7 @@
 package org.alter.eco.api.logic.reward;
 
 import lombok.RequiredArgsConstructor;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.jooq.enums.AccountStatus;
 import org.alter.eco.api.service.db.RewardService;
 import org.slf4j.Logger;
@@ -21,8 +22,11 @@ public class UpdateAccountStatusOperation {
         log.info("UpdateAccountStatusOperation.process.in id = {}", request);
         try {
             internalProcess(request);
+        } catch (HttpCodeException e){
+            log.error("UpdateAccountStatusOperation.process.thrown", e);
+            throw e;
         } catch (Exception e) {
-            log.warn("UpdateAccountStatusOperation.process.thrown", e);
+            log.error("UpdateAccountStatusOperation.process.thrown", e);
             throw INTERNAL_ERROR.exception(e);
         }
         log.info("UpdateAccountStatusOperation.process.out");
