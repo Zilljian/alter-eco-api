@@ -30,13 +30,16 @@ public class RewardService {
 
     public Optional<AccountRecord> findByUser(String userUuid) {
         log.info("RewardService.findByUser.in userUuid = {}", userUuid);
-        var result = db.insertInto(accountTable)
-            .set(accountTable.USER_ID, userUuid)
-            .set(accountTable.AMOUNT, 0L)
-            .onConflictOnConstraint(accountTable.getPrimaryKey())
-            .doNothing()
-            .returning()
+        var result = db.selectFrom(accountTable)
+            .where(accountTable.USER_ID.equal(userUuid))
             .fetchOptional();
+        if (result.isEmpty()) {
+            result = db.insertInto(accountTable)
+                .set(accountTable.USER_ID, userUuid)
+                .set(accountTable.AMOUNT, 0L)
+                .returning()
+                .fetchOptional();
+        }
         log.info("RewardService.findByUser.out");
         return result;
     }
