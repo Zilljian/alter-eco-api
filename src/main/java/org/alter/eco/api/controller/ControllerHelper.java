@@ -1,6 +1,7 @@
 package org.alter.eco.api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.alter.eco.api.exception.HttpCodeException;
 import org.alter.eco.api.service.auth.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,9 @@ public class ControllerHelper {
             var uuid = authService.getUuidFromToken(token);
             MDC.put("user", uuid);
             log.info("ControllerHelper.obtainToken Request by user with uuid = {}", uuid);
+        } catch (HttpCodeException e) {
+            log.error("ControllerHelper.obtainToken.thrown", e);
+            throw e;
         } catch (Exception e) {
             log.error("ControllerHelper.obtainToken.thrown Error while obtaining token", e);
         }
